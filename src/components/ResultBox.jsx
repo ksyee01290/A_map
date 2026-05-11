@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function ResultBox({ text }) {
+  const [localText, setLocalText] = useState('');
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (text) setLocalText(text);
+  }, [text]);
+
   function copy() {
-    navigator.clipboard.writeText(text).then(() => {
+    navigator.clipboard.writeText(localText).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     });
@@ -18,9 +23,12 @@ export default function ResultBox({ text }) {
           <button className="action-btn" onClick={copy}>복사</button>
         </div>
       </div>
-      <div className={`result-text ${!text ? 'result-empty' : ''}`}>
-        {text || '장기 및 소견을 선택하면 여기에 표시됩니다.'}
-      </div>
+        <textarea
+        className="result-text"
+        value={localText}
+        onChange={e => setLocalText(e.target.value)}
+        placeholder="장기 및 소견을 선택하면 여기에 표시됩니다."
+        />
       {copied && <div className="toast show">복사됨 ✓</div>}
     </div>
   );

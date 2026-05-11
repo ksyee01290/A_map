@@ -10,34 +10,49 @@ export default function App() {
   const [modality, setModality] = useState(null);
   const [selections, setSelections] = useState({});
   const [isDark, setIsDark] = useState(false);
+  const [finalText, setFinalText] = useState('');
 
   function selectOrgan(id) {
     setOrgan(id);
     setModality(null);
     setSelections({});
+    setFinalText('');
   }
 
   function selectModality(m) {
     setModality(m);
     setSelections({});
+    setFinalText('');
   }
 
   function toggleOpt(cat, opt) {
-    const key = cat + '|' + opt;
     setSelections(prev => {
-      const next = { ...prev };
-      Object.keys(next).forEach(k => { if (k.startsWith(cat + '|')) delete next[k]; });
-      if (!prev[key]) next[key] = true;
-      return next;
+      if (prev[cat] === opt) {
+        const next = { ...prev };
+        delete next[cat];
+        return next;
+      }
+      return { ...prev, [cat]: opt };
     });
   }
 
   function buildResult() {
-    if (!organ || !modality) return '';
-    const cats = DATA[organ].modalities[modality];
-    return Object.keys(selections)
-      .map(k => { const [c, o] = k.split('|'); return cats[c]?.[o] || ''; })
-      .filter(Boolean).join(' ');
+    if (!organ || !modality) return '장기와 검사방법을 먼저 선택하세요.';
+    const modalityData = DATA[organ].modalities[modality];
+    const key = Object.keys(modalityData)
+      .filter(k => k !== 'findings')
+      .map(k => selections[k] || null)
+      .filter(Boolean)
+      .join('|');
+    // console.log('selections:', selections);  //
+    // console.log('생성된 key:', key);          //
+    // console.log('findings:', modalityData.findings);  //
+    if (!key) return '선택지를 선택하세요.';
+    return modalityData.findings[key] || '해당 조합의 소견문이 없습니다.';
+  }
+
+  function generate() {
+    setFinalText(buildResult());
   }
 
   return (
@@ -59,7 +74,8 @@ export default function App() {
             onModality={selectModality}
             onToggle={toggleOpt}
           />
-          <ResultBox text={buildResult()} />
+          <button className="generate-btn" onClick={generate}>소견문 생성</button>
+          <ResultBox text={finalText} />
         </div>
       </div>
     </div>
