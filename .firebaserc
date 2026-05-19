@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "vet-anatomy-d8791"
-  }
+    "default": "zero-vetmap"
+  },
+  "targets": {},
+  "etags": {}
 }
